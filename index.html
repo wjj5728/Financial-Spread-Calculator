@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>理财利差计算器</title>
+    <title>动态利率理财利差计算器</title>
     <style>
         body {
             font-family: 'Arial', sans-serif;
@@ -94,10 +94,24 @@
             margin-top: 5px;
             display: none;
         }
+        .yearly-rates {
+            margin-top: 20px;
+            display: none;
+        }
+        .rate-inputs {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .rate-input {
+            flex: 1;
+            min-width: 120px;
+        }
     </style>
 </head>
 <body>
-    <h1>理财利差计算器</h1>
+    <h1>动态利率理财利差计算器</h1>
     
     <div class="calculator">
         <div class="input-group">
@@ -116,15 +130,16 @@
         
         <div class="input-group">
             <div class="input-field">
-                <label for="loan-rate">贷款年利率（%）</label>
-                <input type="number" id="loan-rate" min="0.1" max="50" step="0.1" value="2.8">
-                <div class="error" id="loan-error">请输入有效的贷款利率</div>
-            </div>
-            
-            <div class="input-field">
                 <label for="years">投资年限</label>
                 <input type="number" id="years" min="1" max="30" value="5">
                 <div class="error" id="years-error">请输入有效的年限</div>
+            </div>
+        </div>
+        
+        <div class="yearly-rates" id="yearly-rates">
+            <h3>每年贷款利率（%）</h3>
+            <div class="rate-inputs" id="rate-inputs">
+                <!-- 动态生成的利率输入框将放在这里 -->
             </div>
         </div>
         
@@ -153,12 +168,61 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            const yearsInput = document.getElementById('years');
+            const yearlyRatesContainer = document.getElementById('yearly-rates');
+            const rateInputsContainer = document.getElementById('rate-inputs');
+            
+            // 当年限变化时，生成对应数量的利率输入框
+            yearsInput.addEventListener('change', function() {
+                const years = parseInt(yearsInput.value);
+                
+                if (isNaN(years) || years <= 0) {
+                    yearlyRatesContainer.style.display = 'none';
+                    return;
+                }
+                
+                rateInputsContainer.innerHTML = '';
+                
+                for (let i = 1; i <= years; i++) {
+                    const rateInputDiv = document.createElement('div');
+                    rateInputDiv.className = 'rate-input';
+                    
+                    const label = document.createElement('label');
+                    label.textContent = `第 ${i} 年利率`;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'number';
+                    input.min = '0.1';
+                    input.max = '50';
+                    input.step = '0.1';
+                    input.value = '2.8';
+                    input.className = 'loan-rate';
+                    input.dataset.year = i;
+                    
+                    rateInputDiv.appendChild(label);
+                    rateInputDiv.appendChild(input);
+                    rateInputsContainer.appendChild(rateInputDiv);
+                }
+                
+                yearlyRatesContainer.style.display = 'block';
+            });
+            
+            // 初始加载时触发一次change事件
+            yearsInput.dispatchEvent(new Event('change'));
+            
             document.getElementById('calculate-btn').addEventListener('click', function() {
                 // 获取输入值
                 const principal = parseFloat(document.getElementById('principal').value);
                 const investmentRate = parseFloat(document.getElementById('investment-rate').value) / 100;
-                const loanRate = parseFloat(document.getElementById('loan-rate').value) / 100;
                 const years = parseInt(document.getElementById('years').value);
+                
+                // 获取每年的贷款利率
+                const rateInputs = document.querySelectorAll('.loan-rate');
+                const yearlyLoanRates = [];
+                
+                rateInputs.forEach(input => {
+                    yearlyLoanRates.push(parseFloat(input.value) / 100);
+                });
                 
                 // 验证输入
                 let isValid = true;
@@ -177,13 +241,6 @@
                     document.getElementById('investment-error').style.display = 'none';
                 }
                 
-                if (isNaN(loanRate) || loanRate <= 0) {
-                    document.getElementById('loan-error').style.display = 'block';
-                    isValid = false;
-                } else {
-                    document.getElementById('loan-error').style.display = 'none';
-                }
-                
                 if (isNaN(years) || years <= 0) {
                     document.getElementById('years-error').style.display = 'block';
                     isValid = false;
@@ -191,23 +248,32 @@
                     document.getElementById('years-error').style.display = 'none';
                 }
                 
+                // 验证利率输入
+                for (let i = 0; i < yearlyLoanRates.length; i++) {
+                    if (isNaN(yearlyLoanRates[i]) || yearlyLoanRates[i] <= 0) {
+                        alert(`请输入有效的第 ${i+1} 年贷款利率`);
+                        isValid = false;
+                        break;
+                    }
+                }
+                
                 if (!isValid) return;
                 
                 // 计算结果
-                const results = calculateProfit(principal, investmentRate, loanRate, years);
+                const results = calculateProfit(principal, investmentRate, yearlyLoanRates, years);
                 
                 // 显示结果表格
                 displayResults(results);
             });
             
-            function calculateProfit(principal, investmentRate, loanRate, years) {
+            function calculateProfit(principal, investmentRate, yearlyLoanRates, years) {
                 const results = [];
                 let investmentPrincipal = principal;
                 let cumulativeProfit = 0;
                 
                 for (let year = 1; year <= years; year++) {
                     const investmentReturn = investmentPrincipal * investmentRate;
-                    const loanInterest = principal * loanRate;
+                    const loanInterest = principal * yearlyLoanRates[year-1];
                     const annualProfit = investmentReturn - loanInterest;
                     cumulativeProfit += annualProfit;
                     
