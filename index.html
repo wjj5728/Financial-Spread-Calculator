@@ -152,107 +152,109 @@
     </div>
 
     <script>
-        document.getElementById('calculate-btn').addEventListener('click', function() {
-            // 获取输入值
-            const principal = parseFloat(document.getElementById('principal').value);
-            const investmentRate = parseFloat(document.getElementById('investment-rate').value) / 100;
-            const loanRate = parseFloat(document.getElementById('loan-rate').value) / 100;
-            const years = parseInt(document.getElementById('years').value);
-            
-            // 验证输入
-            let isValid = true;
-            
-            if (isNaN(principal) {
-                document.getElementById('principal-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('principal-error').style.display = 'none';
-            }
-            
-            if (isNaN(investmentRate) || investmentRate <= 0) {
-                document.getElementById('investment-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('investment-error').style.display = 'none';
-            }
-            
-            if (isNaN(loanRate) || loanRate <= 0) {
-                document.getElementById('loan-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('loan-error').style.display = 'none';
-            }
-            
-            if (isNaN(years) || years <= 0) {
-                document.getElementById('years-error').style.display = 'block';
-                isValid = false;
-            } else {
-                document.getElementById('years-error').style.display = 'none';
-            }
-            
-            if (!isValid) return;
-            
-            // 计算结果
-            const results = calculateProfit(principal, investmentRate, loanRate, years);
-            
-            // 显示结果表格
-            displayResults(results);
-        });
-        
-        function calculateProfit(principal, investmentRate, loanRate, years) {
-            const results = [];
-            let investmentPrincipal = principal;
-            let cumulativeProfit = 0;
-            
-            for (let year = 1; year <= years; year++) {
-                const investmentReturn = investmentPrincipal * investmentRate;
-                const loanInterest = principal * loanRate;
-                const annualProfit = investmentReturn - loanInterest;
-                cumulativeProfit += annualProfit;
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('calculate-btn').addEventListener('click', function() {
+                // 获取输入值
+                const principal = parseFloat(document.getElementById('principal').value);
+                const investmentRate = parseFloat(document.getElementById('investment-rate').value) / 100;
+                const loanRate = parseFloat(document.getElementById('loan-rate').value) / 100;
+                const years = parseInt(document.getElementById('years').value);
                 
-                results.push({
-                    year,
-                    investmentPrincipal: investmentPrincipal.toFixed(2),
-                    investmentReturn: investmentReturn.toFixed(2),
-                    loanInterest: loanInterest.toFixed(2),
-                    annualProfit: annualProfit.toFixed(2),
-                    cumulativeProfit: cumulativeProfit.toFixed(2)
-                });
+                // 验证输入
+                let isValid = true;
                 
-                investmentPrincipal += parseFloat(investmentReturn);
-            }
-            
-            return results;
-        }
-        
-        function displayResults(results) {
-            const tableBody = document.getElementById('result-body');
-            tableBody.innerHTML = '';
-            
-            results.forEach(result => {
-                const row = document.createElement('tr');
+                if (isNaN(principal) || principal <= 0) {
+                    document.getElementById('principal-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('principal-error').style.display = 'none';
+                }
                 
-                row.innerHTML = `
-                    <td>${result.year}</td>
-                    <td>${result.investmentPrincipal}</td>
-                    <td>${result.investmentReturn}</td>
-                    <td>${result.loanInterest}</td>
-                    <td>${result.annualProfit}</td>
-                    <td>${result.cumulativeProfit}</td>
-                `;
+                if (isNaN(investmentRate) || investmentRate <= 0) {
+                    document.getElementById('investment-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('investment-error').style.display = 'none';
+                }
                 
-                tableBody.appendChild(row);
+                if (isNaN(loanRate) || loanRate <= 0) {
+                    document.getElementById('loan-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('loan-error').style.display = 'none';
+                }
+                
+                if (isNaN(years) || years <= 0) {
+                    document.getElementById('years-error').style.display = 'block';
+                    isValid = false;
+                } else {
+                    document.getElementById('years-error').style.display = 'none';
+                }
+                
+                if (!isValid) return;
+                
+                // 计算结果
+                const results = calculateProfit(principal, investmentRate, loanRate, years);
+                
+                // 显示结果表格
+                displayResults(results);
             });
             
-            // 显示表格和总结
-            document.getElementById('result-table').style.display = 'table';
-            document.getElementById('summary').style.display = 'block';
+            function calculateProfit(principal, investmentRate, loanRate, years) {
+                const results = [];
+                let investmentPrincipal = principal;
+                let cumulativeProfit = 0;
+                
+                for (let year = 1; year <= years; year++) {
+                    const investmentReturn = investmentPrincipal * investmentRate;
+                    const loanInterest = principal * loanRate;
+                    const annualProfit = investmentReturn - loanInterest;
+                    cumulativeProfit += annualProfit;
+                    
+                    results.push({
+                        year,
+                        investmentPrincipal: investmentPrincipal.toFixed(2),
+                        investmentReturn: investmentReturn.toFixed(2),
+                        loanInterest: loanInterest.toFixed(2),
+                        annualProfit: annualProfit.toFixed(2),
+                        cumulativeProfit: cumulativeProfit.toFixed(2)
+                    });
+                    
+                    investmentPrincipal += parseFloat(investmentReturn);
+                }
+                
+                return results;
+            }
             
-            // 更新总结信息
-            const lastResult = results[results.length - 1];
-            document.getElementById('final-investment').textContent = lastResult.investmentPrincipal;
-            document.getElementById('total-profit').textContent = lastResult.cumulativeProfit;
-        }
+            function displayResults(results) {
+                const tableBody = document.getElementById('result-body');
+                tableBody.innerHTML = '';
+                
+                results.forEach(result => {
+                    const row = document.createElement('tr');
+                    
+                    row.innerHTML = `
+                        <td>${result.year}</td>
+                        <td>${result.investmentPrincipal}</td>
+                        <td>${result.investmentReturn}</td>
+                        <td>${result.loanInterest}</td>
+                        <td>${result.annualProfit}</td>
+                        <td>${result.cumulativeProfit}</td>
+                    `;
+                    
+                    tableBody.appendChild(row);
+                });
+                
+                // 显示表格和总结
+                document.getElementById('result-table').style.display = 'table';
+                document.getElementById('summary').style.display = 'block';
+                
+                // 更新总结信息
+                const lastResult = results[results.length - 1];
+                document.getElementById('final-investment').textContent = lastResult.investmentPrincipal;
+                document.getElementById('total-profit').textContent = lastResult.cumulativeProfit;
+            }
+        });
     </script>
 </body>
 </html>
